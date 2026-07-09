@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — DLS Group Rankings</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- LOCK SCREEN -->
+<div class="lock-screen" id="lockScreen">
+  <div class="kicker">Restricted</div>
+  <h1 style="font-size:24px;">Admin Access</h1>
+  <p class="sub" style="margin-bottom:20px;">Enter the password to update results.</p>
+  <input type="password" id="pwInput" placeholder="Password" autocomplete="off">
+  <button class="btn-primary" id="unlockBtn">Unlock</button>
+  <div class="lock-error" id="lockError"></div>
+</div>
+
+<!-- ADMIN PANEL (hidden until unlocked) -->
+<div class="wrap" id="adminWrap" style="display:none;">
+  <header>
+    <div class="kicker">Admin · Season 01</div>
+    <h1>Update Table</h1>
+    <div class="sub">Log a result — the table re-sorts automatically.</div>
+    <a class="admin-link" href="index.html">← Back to public table</a>
+  </header>
+
+  <div class="table-card">
+    <div class="thead">
+      <span>#</span>
+      <span>Club</span>
+      <span>MP</span>
+      <span>W</span>
+      <span>D</span>
+      <span>L</span>
+      <span>GF</span>
+      <span>GA</span>
+      <span>Pts</span>
+    </div>
+    <div id="tableBody"></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Log a result</div>
+    <div class="panel-hint">Pick two clubs, enter the score, save.</div>
+
+    <div class="match-row">
+      <select id="teamA"></select>
+      <input type="number" id="scoreA" min="0" value="0" inputmode="numeric">
+      <span class="vs">–</span>
+      <input type="number" id="scoreB" min="0" value="0" inputmode="numeric">
+      <select id="teamB"></select>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" id="saveBtn">Save result</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Manage teams</div>
+    <div class="panel-hint">Add a new club or remove one from the table. Removing a team deletes its record permanently.</div>
+
+    <div class="add-team-row">
+      <input type="text" id="newTeamName" placeholder="New team name" autocomplete="off">
+      <button class="btn-primary btn-add" id="addTeamBtn">Add</button>
+    </div>
+
+    <div id="teamList" class="team-list"></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Danger zone</div>
+    <div class="panel-hint">Wipes every team back to 0 points. Cannot be undone.</div>
+    <div class="btn-row">
+      <button class="btn-ghost" id="resetBtn" style="flex:1;">Reset season</button>
+    </div>
+  </div>
+
+  <div class="status" id="status">Saved</div>
+
+  <footer>DLS GROUP RANKINGS · ADMIN</footer>
+</div>
+
+<script src="data.js"></script>
+<script>
+  // ---- Change this password to whatever you like ----
+  const ADMIN_PASSWORD = "dlsboss2026";
+  const SESSION_KEY = 'dls_admin_unlocked';
+
+  const lockScreen = document.getElementById('lockScreen');
+  const adminWrap = document.getElementById('adminWrap');
+  const lockError = document.getElementById('lockError');
+
+  function unlock(){
+    lockScreen.style.display = 'none';
+    adminWrap.style.display = 'block';
+    sessionStorage.setItem(SESSION_KEY, '1');
+    render();
+  }
+
+  document.getElementById('unlockBtn').addEventListener('click', tryUnlock);
+  document.getElementById('pwInput').addEventListener('keydown', e => {
+    if(e.key === 'Enter') tryUnlock();
+  });
+
+  function tryUnlock(){
+    const val = document.getElementById('pwInput').value;
+    if(val === ADMIN_PASSWORD){
+      unlock();
+    } else {
+      lockError.textContent = 'Wrong password — try again';
+      document.getElementById('pwInput').value = '';
+    }
+  }
+
+  // stay unlocked for this browser tab session
+  if(sessionStorage.getItem(SESSION_KEY) === '1'){
+    unlock();
+  }
+
+  // ---- Admin table logic ----
+  let teams = loadTeams();
+  let lastOrder = teams.map(t => t.name);
+
+  function render(){
+    const sorted = sortTeams(teams);
+    const body = document.getElementById('tableBody');
+    body.innerHTML = '';
+
+    sorted.forEach((t, i) => {
+      const prevIndex = lastOrder.indexOf(t.name);
+      let arrow = '';
+      if(prevIndex !== -1 && prevIndex !== i){
+        arrow = prevIndex > i
+          ? '<span class="arrow up">▲</span>'
+          : '<span class="arrow down">▼</span>';
+      }
+      const moved = prevIndex !== -1 && prevIndex !== i;
+
+      const row = document.createElement('div');
+      row.className = 'row' + (moved ? ' moved' : '');
+      row.innerHTML = `
+        <div class="pos">${i+1}${arrow}</div>
+        <div class="team-name">${t.name}</div>
+        <div class="wdl">${t.played}</div>
+        <div class="wdl">${t.w}</div>
+        <div class="wdl">${t.d}</div>
+        <div class="wdl">${t.l}</div>
+        <div class="wdl">${t.gf}</div>
+        <div class="wdl">${t.ga}</div>
+        <div class="pts">${t.pts}</div>
+      `;
+      body.appendChild(row);
+    });
+
+    lastOrder = sorted.map(t => t.name);
+
+    const teamA = document.getElementById('teamA');
+    const teamB = document.getElementById('teamB');
+    const currentA = teamA.value, currentB = teamB.value;
+    teamA.innerHTML = teams.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+    teamB.innerHTML = teams.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+    if(currentA) teamA.value = currentA;
+    if(currentB && currentB !== teamA.value) teamB.value = currentB;
+    else teamB.selectedIndex = 1;
+
+    renderTeamList();
+  }
+
+  function renderTeamList(){
+    const list = document.getElementById('teamList');
+    list.innerHTML = '';
+
+    if(teams.length === 0){
+      list.innerHTML = '<div class="team-list-empty">No teams yet — add one above.</div>';
+      return;
+    }
+
+    teams.forEach(t => {
+      const item = document.createElement('div');
+      item.className = 'team-list-item';
+      item.innerHTML = `
+        <span class="team-list-name">${t.name}</span>
+        <button class="btn-remove" data-team="${t.name}">Remove</button>
+      `;
+      list.appendChild(item);
+    });
+
+    document.querySelectorAll('.btn-remove').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const name = btn.getAttribute('data-team');
+        if(!confirm(`Remove ${name} from the table? This deletes their record.`)) return;
+        removeTeam(teams, name);
+        lastOrder = lastOrder.filter(n => n !== name);
+        render();
+        showStatus(`${name} removed`, 'var(--green)');
+      });
+    });
+  }
+
+  document.getElementById('addTeamBtn').addEventListener('click', () => {
+    const input = document.getElementById('newTeamName');
+    const name = input.value.trim();
+    if(!name){
+      showStatus('Enter a team name', 'var(--red)');
+      return;
+    }
+    const added = addTeam(teams, name);
+    if(!added){
+      showStatus('Team already exists', 'var(--red)');
+      return;
+    }
+    input.value = '';
+    render();
+    showStatus(`${name} added`, 'var(--green)');
+  });
+
+  document.getElementById('newTeamName').addEventListener('keydown', e => {
+    if(e.key === 'Enter') document.getElementById('addTeamBtn').click();
+  });
+
+  function showStatus(msg, color){
+    const status = document.getElementById('status');
+    status.textContent = msg;
+    status.style.color = color;
+    status.classList.add('show');
+    setTimeout(()=> status.classList.remove('show'), 1800);
+  }
+
+  document.getElementById('saveBtn').addEventListener('click', () => {
+    const nameA = document.getElementById('teamA').value;
+    const nameB = document.getElementById('teamB').value;
+    const scoreA = parseInt(document.getElementById('scoreA').value, 10) || 0;
+    const scoreB = parseInt(document.getElementById('scoreB').value, 10) || 0;
+
+    if(nameA === nameB){
+      showStatus('Pick two different clubs', 'var(--red)');
+      return;
+    }
+
+    recordResult(teams, nameA, scoreA, nameB, scoreB);
+    render();
+
+    document.getElementById('scoreA').value = 0;
+    document.getElementById('scoreB').value = 0;
+    showStatus('Saved — table updated', 'var(--green)');
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    if(!confirm('Reset the whole season back to 0 points for everyone?')) return;
+    teams = resetSeason();
+    lastOrder = teams.map(t => t.name);
+    render();
+    showStatus('Season reset', 'var(--green)');
+  });
+</script>
+
+</body>
+</html>
