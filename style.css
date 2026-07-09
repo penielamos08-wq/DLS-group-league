@@ -1,0 +1,324 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root{
+  --pitch-dark:#0b1f14;
+  --pitch:#0f2a1c;
+  --line:#1c4530;
+  --chalk:#eef3ec;
+  --chalk-dim:#a9bdb0;
+  --gold:#e8b649;
+  --gold-dim:#7a6532;
+  --red:#e0524a;
+  --green:#4fae6e;
+  --card:#12301f;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+  background: radial-gradient(ellipse at top, #143d27 0%, var(--pitch-dark) 60%);
+  color:var(--chalk);
+  font-family:'Space Grotesk', sans-serif;
+  min-height:100vh;
+  padding:20px 14px 60px;
+}
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:repeating-linear-gradient(
+    100deg,
+    rgba(255,255,255,0.015) 0px,
+    rgba(255,255,255,0.015) 60px,
+    transparent 60px,
+    transparent 120px
+  );
+  pointer-events:none;
+  z-index:0;
+}
+
+.wrap{ max-width:640px; margin:0 auto; position:relative; z-index:1; }
+
+header{ text-align:center; margin-bottom:22px; }
+
+.kicker{
+  font-family:'JetBrains Mono', monospace;
+  font-size:11px;
+  letter-spacing:0.25em;
+  color:var(--gold);
+  text-transform:uppercase;
+}
+
+h1{
+  font-family:'Archivo Black', sans-serif;
+  font-size:clamp(28px, 8vw, 40px);
+  letter-spacing:-0.01em;
+  margin:6px 0 4px;
+  line-height:1.02;
+}
+
+.sub{ font-size:13px; color:var(--chalk-dim); }
+
+a.admin-link{
+  display:inline-block;
+  font-family:'JetBrains Mono', monospace;
+  font-size:10.5px;
+  letter-spacing:0.08em;
+  color:var(--gold-dim);
+  text-decoration:none;
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:6px 14px;
+}
+a.admin-link:hover{ color:var(--gold); border-color:var(--gold-dim); }
+
+/* ===== Table ===== */
+.table-card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:14px;
+  overflow:hidden;
+  margin-bottom:26px;
+  box-shadow:0 12px 30px -14px rgba(0,0,0,0.6);
+}
+
+.thead{
+  display:grid;
+  grid-template-columns:20px 1fr 22px 22px 22px 22px 24px 24px 34px;
+  gap:4px;
+  padding:12px 8px;
+  font-family:'JetBrains Mono', monospace;
+  font-size:9px;
+  letter-spacing:0.03em;
+  color:var(--chalk-dim);
+  text-transform:uppercase;
+  border-bottom:1px solid var(--line);
+}
+.thead span:nth-child(n+3){
+  text-align:center;
+}
+
+.row{
+  display:grid;
+  grid-template-columns:20px 1fr 22px 22px 22px 22px 24px 24px 34px;
+  gap:4px;
+  align-items:center;
+  padding:12px 8px;
+  border-bottom:1px solid rgba(28,69,48,0.6);
+  transition:background 0.5s ease;
+}
+.row:last-child{ border-bottom:none; }
+.row.moved{ background:rgba(232,182,73,0.08); }
+
+.pos{
+  font-family:'JetBrains Mono', monospace;
+  font-weight:700;
+  font-size:12.5px;
+  color:var(--chalk-dim);
+  display:flex;
+  align-items:center;
+  gap:2px;
+}
+.row:nth-child(1) .pos, .row:nth-child(2) .pos{ color:var(--gold); }
+
+.arrow{ font-size:8px; }
+.arrow.up{ color:var(--green); }
+.arrow.down{ color:var(--red); }
+
+.team-name{ font-weight:600; font-size:12.5px; letter-spacing:-0.01em; line-height:1.15; }
+
+.row:first-child .team-name::after{
+  content:"CHAMPION";
+  display:block;
+  font-family:'JetBrains Mono', monospace;
+  font-size:8.5px;
+  letter-spacing:0.15em;
+  color:var(--gold);
+  margin-top:2px;
+}
+
+.wdl{
+  font-family:'JetBrains Mono', monospace;
+  font-size:11.5px;
+  text-align:center;
+  color:var(--chalk-dim);
+}
+
+.pts{
+  font-family:'JetBrains Mono', monospace;
+  font-weight:700;
+  font-size:13.5px;
+  text-align:center;
+  background:var(--pitch);
+  border-radius:6px;
+  padding:4px 0;
+  border:1px solid var(--line);
+}
+
+/* ===== Panel (admin) ===== */
+.panel{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:18px;
+  margin-bottom:18px;
+}
+
+.panel-title{ font-family:'Archivo Black', sans-serif; font-size:15px; margin-bottom:3px; }
+.panel-hint{ font-size:12px; color:var(--chalk-dim); margin-bottom:16px; }
+
+.match-row{
+  display:grid;
+  grid-template-columns:1fr 46px 12px 46px 1fr;
+  gap:8px;
+  align-items:center;
+  margin-bottom:12px;
+}
+
+select, input[type=number], input[type=password], input[type=text]{
+  background:var(--pitch);
+  border:1px solid var(--line);
+  color:var(--chalk);
+  border-radius:8px;
+  padding:10px 8px;
+  font-family:'Space Grotesk', sans-serif;
+  font-size:13px;
+  width:100%;
+  appearance:none;
+  -webkit-appearance:none;
+}
+select{ font-size:12.5px; }
+input[type=number]{
+  text-align:center;
+  font-family:'JetBrains Mono', monospace;
+  font-weight:700;
+}
+
+.vs{
+  text-align:center;
+  color:var(--gold-dim);
+  font-family:'JetBrains Mono', monospace;
+  font-size:11px;
+}
+
+.btn-row{ display:flex; gap:10px; margin-top:16px; }
+
+button{
+  font-family:'Space Grotesk', sans-serif;
+  font-weight:600;
+  font-size:13.5px;
+  border:none;
+  border-radius:9px;
+  padding:13px 0;
+  cursor:pointer;
+  flex:1;
+  transition:transform 0.15s ease, filter 0.15s ease;
+}
+button:active{ transform:scale(0.97); }
+
+.btn-primary{ background:var(--gold); color:#1c1404; }
+.btn-primary:hover{ filter:brightness(1.08); }
+
+.btn-ghost{
+  background:transparent;
+  border:1px solid var(--line);
+  color:var(--chalk-dim);
+  flex:0 0 auto;
+  padding:13px 16px;
+}
+.btn-ghost:hover{ border-color:var(--red); color:var(--red); }
+
+.status{
+  font-family:'JetBrains Mono', monospace;
+  font-size:11.5px;
+  color:var(--green);
+  text-align:center;
+  margin-top:12px;
+  min-height:14px;
+  opacity:0;
+  transition:opacity 0.3s ease;
+}
+.status.show{ opacity:1; }
+
+/* ===== Manage teams ===== */
+.add-team-row{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:8px;
+  margin-bottom:14px;
+}
+
+.btn-add{
+  flex:0 0 auto;
+  padding:10px 18px;
+}
+
+.team-list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.team-list-empty{
+  font-family:'JetBrains Mono', monospace;
+  font-size:12px;
+  color:var(--chalk-dim);
+  padding:10px 0;
+  text-align:center;
+}
+
+.team-list-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:var(--pitch);
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:10px 12px;
+}
+
+.team-list-name{
+  font-weight:600;
+  font-size:13.5px;
+}
+
+.btn-remove{
+  flex:0 0 auto;
+  background:transparent;
+  border:1px solid var(--line);
+  color:var(--red);
+  font-family:'JetBrains Mono', monospace;
+  font-size:11px;
+  letter-spacing:0.03em;
+  padding:6px 12px;
+  border-radius:6px;
+}
+.btn-remove:hover{ border-color:var(--red); background:rgba(224,82,74,0.08); }
+
+.lock-screen{
+  max-width:340px;
+  margin:80px auto 0;
+  text-align:center;
+}
+.lock-screen input{ margin-bottom:12px; text-align:center; }
+.lock-screen .btn-primary{ width:100%; }
+.lock-error{
+  color:var(--red);
+  font-family:'JetBrains Mono', monospace;
+  font-size:11.5px;
+  margin-top:10px;
+  min-height:14px;
+}
+
+footer{
+  text-align:center;
+  margin-top:22px;
+  font-family:'JetBrains Mono', monospace;
+  font-size:10.5px;
+  color:var(--line);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:12px;
+}
