@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DLS Group Rankings</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="kicker">Season · Table</div>
+    <h1>DLS Group Rankings</h1>
+    <div class="sub">All clubs Table updates on every result.</div>
+  </header>
+
+  <div class="table-card">
+    <div class="thead">
+      <span>#</span>
+      <span>Club</span>
+      <span>MP</span>
+      <span>W</span>
+      <span>D</span>
+      <span>L</span>
+      <span>GF</span>
+      <span>GA</span>
+      <span>Pts</span>
+    </div>
+    <div id="tableBody"></div>
+  </div>
+
+  <footer>
+    <div>DLS GROUP RANKINGS · VIEW ONLY</div>
+    <a class="admin-link" href="admin.html">Admin login →</a>
+  </footer>
+</div>
+
+<script src="data.js"></script>
+<script>
+  const teams = loadTeams();
+  const sorted = sortTeams(teams);
+  const body = document.getElementById('tableBody');
+
+  sorted.forEach((t, i) => {
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = `
+      <div class="pos">${i+1}</div>
+      <div class="team-name">${t.name}</div>
+      <div class="wdl">${t.played}</div>
+      <div class="wdl">${t.w}</div>
+      <div class="wdl">${t.d}</div>
+      <div class="wdl">${t.l}</div>
+      <div class="wdl">${t.gf}</div>
+      <div class="wdl">${t.ga}</div>
+      <div class="pts">${t.pts}</div>
+    `;
+    body.appendChild(row);
+  });
+</script>
+
+</body>
+</html>
